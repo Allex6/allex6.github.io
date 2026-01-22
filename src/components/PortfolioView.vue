@@ -9,15 +9,16 @@ import {
   ArrowUpRight,
   Atom,
   MapPin,
-  FileText
+  FileText,
+  X // Novo ícone para fechar o modal
 } from 'lucide-vue-next';
 
-// --- TIPO DE DADOS PARA TRADUÇÃO ---
+// --- TIPO DE DADOS ---
 type ProjectData = {
   title: string;
   subtitle: string;
   desc: string;
-  url: string; // Novo campo URL
+  url: string;
   status?: string;
 };
 
@@ -35,6 +36,8 @@ type Translation = {
     rights: string;
     location: string;
     companyIdLabel: string;
+    privacy: string; // Novo
+    terms: string;   // Novo
   };
 };
 
@@ -69,7 +72,9 @@ const messages: Record<'en' | 'pt', Translation> = {
     footer: {
       rights: "All rights reserved.",
       location: "Brazil",
-      companyIdLabel: "Tax ID"
+      companyIdLabel: "Tax ID",
+      privacy: "Privacy Policy",
+      terms: "Terms of Use"
     }
   },
   pt: {
@@ -101,17 +106,31 @@ const messages: Record<'en' | 'pt', Translation> = {
     footer: {
       rights: "Todos os direitos reservados.",
       location: "Brasil",
-      companyIdLabel: "CNPJ"
+      companyIdLabel: "CNPJ",
+      privacy: "Política de Privacidade",
+      terms: "Termos de Uso"
     }
   }
 };
 
 // --- STATE MANAGEMENT ---
 const currentLang = ref<'en' | 'pt'>('en');
+const activeModal = ref<'privacy' | 'terms' | null>(null); // Estado do Modal
+
 const t = computed(() => messages[currentLang.value]);
 
 const toggleLang = () => {
   currentLang.value = currentLang.value === 'en' ? 'pt' : 'en';
+};
+
+const openModal = (type: 'privacy' | 'terms') => {
+  activeModal.value = type;
+  document.body.style.overflow = 'hidden'; // Impede scroll no fundo
+};
+
+const closeModal = () => {
+  activeModal.value = null;
+  document.body.style.overflow = ''; // Libera scroll
 };
 
 onMounted(() => {
@@ -120,7 +139,6 @@ onMounted(() => {
 });
 
 // --- UTILS ---
-// Adicionado 'block' para garantir que a tag <a> ocupe o espaço todo
 const cardBaseClass = "block group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md transition-all duration-300 hover:border-[#2563EB]/50 hover:shadow-[0_0_30px_-5px_rgba(37,99,235,0.2)]";
 </script>
 
@@ -128,7 +146,6 @@ const cardBaseClass = "block group relative overflow-hidden rounded-2xl border b
   <div class="min-h-screen bg-[#050505] text-gray-300 selection:bg-[#2563EB] selection:text-white font-sans pb-20 w-full flex flex-col">
     
     <header class="mx-auto max-w-6xl px-6 py-8 flex justify-between items-center w-full">
-      
       <div class="group cursor-pointer select-none">
         <h1 class="font-grotesk text-2xl font-bold tracking-tight text-white group-hover:text-gray-100 transition-colors">
           alex.souza<span class="text-[#2563EB] animate-cursor-blink">_</span>
@@ -191,7 +208,6 @@ const cardBaseClass = "block group relative overflow-hidden rounded-2xl border b
             <div class="mt-6 flex items-center gap-3">
                <span class="text-xs font-mono border border-white/10 px-2 py-1 rounded bg-black/40 text-gray-400">Vue 3</span>
                <span class="text-xs font-mono border border-white/10 px-2 py-1 rounded bg-black/40 text-gray-400">Node.js</span>
-               <span class="text-xs font-mono border border-white/10 px-2 py-1 rounded bg-black/40 text-gray-400">AWS SDK</span>
             </div>
              <div class="mt-4 flex items-center gap-2 text-sm font-mono text-[#2563EB] opacity-0 translate-y-2 transition-all group-hover:opacity-100 group-hover:translate-y-0">
               Visit Website <ArrowUpRight class="h-4 w-4" />
@@ -206,9 +222,6 @@ const cardBaseClass = "block group relative overflow-hidden rounded-2xl border b
           <h3 class="text-xl font-semibold text-white group-hover:text-[#2563EB] transition-colors">{{ t.projects.entangle.title }}</h3>
           <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-2">{{ t.projects.entangle.subtitle }}</p>
           <p class="mt-2 text-sm text-gray-400">{{ t.projects.entangle.desc }}</p>
-          <div class="mt-4 flex items-center gap-2 text-sm font-mono text-[#2563EB] opacity-0 translate-y-2 transition-all group-hover:opacity-100 group-hover:translate-y-0">
-              View Github <ArrowUpRight class="h-4 w-4" />
-            </div>
         </a>
 
         <a :href="t.projects.jscience.url" target="_blank" :class="cardBaseClass">
@@ -218,9 +231,6 @@ const cardBaseClass = "block group relative overflow-hidden rounded-2xl border b
           <h3 class="text-xl font-semibold text-white group-hover:text-[#2563EB] transition-colors">{{ t.projects.jscience.title }}</h3>
           <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-2">{{ t.projects.jscience.subtitle }}</p>
           <p class="mt-2 text-sm text-gray-400">{{ t.projects.jscience.desc }}</p>
-          <div class="mt-4 flex items-center gap-2 text-sm font-mono text-[#2563EB] opacity-0 translate-y-2 transition-all group-hover:opacity-100 group-hover:translate-y-0">
-              View Github <ArrowUpRight class="h-4 w-4" />
-            </div>
         </a>
 
         <article :class="[cardBaseClass, 'md:col-span-2 md:col-start-2 flex items-center justify-center relative']">
@@ -245,11 +255,11 @@ const cardBaseClass = "block group relative overflow-hidden rounded-2xl border b
     <footer class="mx-auto max-w-6xl px-6 border-t border-white/5 py-12 w-full mt-auto">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-4">
           <div class="text-sm text-gray-400">
             &copy; 2026 Alex Souza. {{ t.footer.rights }}
           </div>
-          <div class="flex gap-4 text-xs font-mono text-gray-600">
+          <div class="flex flex-wrap gap-4 text-xs font-mono text-gray-600">
             <span class="flex items-center gap-1">
               <MapPin class="h-3 w-3" /> {{ t.footer.location }}
             </span>
@@ -257,21 +267,83 @@ const cardBaseClass = "block group relative overflow-hidden rounded-2xl border b
               <FileText class="h-3 w-3" /> {{ t.footer.companyIdLabel }}: 48.078.381/0001-58
             </span>
           </div>
+          <div class="flex gap-4 text-xs font-mono text-gray-500">
+            <button @click="openModal('privacy')" class="hover:text-[#2563EB] transition-colors underline underline-offset-4">
+              {{ t.footer.privacy }}
+            </button>
+            <button @click="openModal('terms')" class="hover:text-[#2563EB] transition-colors underline underline-offset-4">
+              {{ t.footer.terms }}
+            </button>
+          </div>
         </div>
 
         <div class="flex gap-6">
-          <a href="https://github.com/allex6" target="_blank" class="text-gray-500 hover:text-white transition-colors" title="GitHub">
+          <a href="https://github.com/allex6" target="_blank" class="text-gray-500 hover:text-white transition-colors">
             <Github class="h-5 w-5" />
           </a>
-          <a href="https://www.linkedin.com/in/alex-s-franca/" target="_blank" class="text-gray-500 hover:text-[#0A66C2] transition-colors" title="LinkedIn">
+          <a href="https://www.linkedin.com/in/alex-s-franca/" target="_blank" class="text-gray-500 hover:text-[#0A66C2] transition-colors">
             <Linkedin class="h-5 w-5" />
           </a>
-          <a href="https://medium.com/@allex6" target="_blank" class="text-gray-500 hover:text-white transition-colors" title="Medium">
+          <a href="https://medium.com/@allex6" target="_blank" class="text-gray-500 hover:text-white transition-colors">
             <BookOpen class="h-5 w-5" />
           </a>
         </div>
       </div>
     </footer>
+
+    <div v-if="activeModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" @click="closeModal">
+      
+      <div class="relative bg-[#0A0A0A] border border-white/10 rounded-2xl p-8 max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl" @click.stop>
+        
+        <button @click="closeModal" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+          <X class="h-6 w-6" />
+        </button>
+
+        <div v-if="activeModal === 'privacy'" class="prose prose-invert prose-sm max-w-none text-gray-300">
+          <h2 class="text-xl font-bold text-white mb-6">Política de Privacidade</h2>
+          <p class="text-xs text-gray-500 mb-4">Última atualização: Janeiro de 2026</p>
+          
+          <h3 class="text-white font-semibold mt-4">1. Controlador de Dados</h3>
+          <p>Este portfólio é operado por Alex Souza (CNPJ 48.078.381/0001-58).</p>
+
+          <h3 class="text-white font-semibold mt-4">2. Coleta de Dados</h3>
+          <p>Neste site (portfólio pessoal), não coletamos dados pessoais diretamente (como cookies de rastreamento invasivos ou formulários de cadastro), exceto métricas anônimas de acesso para fins de performance.</p>
+
+          <h3 class="text-white font-semibold mt-4">3. Serviços de Terceiros e Links</h3>
+          <p>Este site contém links para nossos produtos (ex: InfraLens) e redes sociais (GitHub, LinkedIn). Ao clicar nesses links, você estará sujeito às políticas de privacidade daqueles domínios específicos.</p>
+          <ul class="list-disc pl-4 mt-2">
+            <li><strong>InfraLens:</strong> Ao contratar o software, os dados de faturamento são processados integralmente pela Stripe, garantindo segurança nível PCI-DSS. Nós não armazenamos números de cartão de crédito.</li>
+          </ul>
+
+          <h3 class="text-white font-semibold mt-4">4. Contato</h3>
+          <p>Para questões sobre dados ou LGPD, contate: contato@infralens.com.br</p>
+        </div>
+
+        <div v-if="activeModal === 'terms'" class="prose prose-invert prose-sm max-w-none text-gray-300">
+          <h2 class="text-xl font-bold text-white mb-6">Termos de Uso e Política de Reembolso</h2>
+          
+          <h3 class="text-white font-semibold mt-4">1. O Serviço</h3>
+          <p>A "AS Engineering" desenvolve e licencia softwares proprietários (SaaS) e bibliotecas de código. Este site atua como portfólio central para esses produtos.</p>
+
+          <h3 class="text-white font-semibold mt-4">2. Propriedade Intelectual</h3>
+          <p>Todo o código-fonte, design, logotipos ("InfraLens", "Entangle.ts") e arquitetura apresentados são de propriedade exclusiva de Alex Souza. É proibida a cópia, engenharia reversa ou redistribuição sem licença explícita.</p>
+
+          <h3 class="text-white font-semibold mt-4">3. Política de Pagamentos e Reembolsos (SaaS)</h3>
+          <ul class="list-disc pl-4 mt-2 space-y-2">
+            <li><strong>Assinaturas (InfraLens):</strong> O cancelamento pode ser feito a qualquer momento, interrompendo a renovação automática.</li>
+            <li><strong>Reembolsos:</strong> Dada a natureza digital e o acesso imediato ao software e relatórios de custo, oferecemos reembolso integral apenas se solicitado em até 7 dias após a primeira compra (Garantia de Satisfação), conforme Art. 49 do CDC. Após este prazo, não realizamos estornos parciais.</li>
+          </ul>
+
+          <h3 class="text-white font-semibold mt-4">4. Limitação de Responsabilidade</h3>
+          <p>Nossos softwares (como o InfraLens) são ferramentas de análise "Read-Only". Não nos responsabilizamos por alterações manuais feitas pelo usuário em sua própria infraestrutura de nuvem baseadas em nossas sugestões.</p>
+
+          <h3 class="text-white font-semibold mt-4">5. Foro</h3>
+          <p>Fica eleito o foro da comarca de Cajazeiras/PB para dirimir questões oriundas destes termos.</p>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -281,4 +353,19 @@ const cardBaseClass = "block group relative overflow-hidden rounded-2xl border b
 .font-mono { font-family: 'Space Mono', monospace; }
 .font-sans { font-family: 'Inter', sans-serif; }
 .font-grotesk { font-family: 'Space Grotesk', sans-serif; }
+
+/* Custom Scrollbar para o Modal */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0A0A0A; 
+}
+::-webkit-scrollbar-thumb {
+  background: #333; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
 </style>
